@@ -1,0 +1,8 @@
+# 1. Remove the folder from Git's tracking (this won't delete it from your PC)
+git rm -r --cached .idea/
+
+# 2. Stage the change
+git add .gitignore
+
+# 3. Commit the change
+git commit -m "Ignore .idea directory"
