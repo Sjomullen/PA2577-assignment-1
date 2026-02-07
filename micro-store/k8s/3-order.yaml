@@ -1,3 +1,7 @@
+# ---------------------------------------------------------
+# 1. ORDER DEPLOYMENT (Frontend)
+# The public-facing service that users interact with.
+# ---------------------------------------------------------
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -14,23 +18,33 @@ spec:
     spec:
       containers:
         - name: order
-          # REPLACE WITH YOUR DOCKER HUB IMAGE/USERNAME
+          # Your Docker Hub image
           image: spikaer/order-service:latest
           ports:
             - containerPort: 5001
+          # SERVICE DISCOVERY:
+          # Tells the Order service where to find the Inventory service.
+          # We use the internal DNS name 'http://inventory-service:5000'.
           env:
             - name: INVENTORY_URL
               value: "http://inventory-service:5000"
+
 ---
+# ---------------------------------------------------------
+# 2. ORDER SERVICE (External Access)
+# Uses 'LoadBalancer' to expose the service to the browser.
+# ---------------------------------------------------------
 apiVersion: v1
 kind: Service
 metadata:
   name: order-service
 spec:
-  type: LoadBalancer # Change to NodePort if using Minikube/local
+  # 'LoadBalancer' provides an external IP (localhost on Docker Desktop).
+  # If this were 'ClusterIP', you couldn't access it from your browser.
+  type: LoadBalancer
   selector:
     app: order
   ports:
-    - port: 80
-      targetPort: 5001
-      nodePort: 30001 # Optional: forces port 30001
+    - port: 80         # The port you type in your browser (http://localhost:80)
+      targetPort: 5001 # The internal port the Flask app is running on
+      nodePort: 30001  # A fixed backup port if LoadBalancer IP fails

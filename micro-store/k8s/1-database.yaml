@@ -1,14 +1,24 @@
+# ---------------------------------------------------------
+# 1. PERSISTENT VOLUME CLAIM (PVC)
+# This requests storage from the underlying infrastructure.
+# It ensures data survives even if the database pod crashes.
+# ---------------------------------------------------------
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: mongo-pvc
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteOnce # Only one node can mount this as read-write
   resources:
     requests:
-      storage: 1Gi
+      storage: 1Gi  # Requests 1 Gigabyte of disk space
+
 ---
+# ---------------------------------------------------------
+# 2. DATABASE DEPLOYMENT
+# Runs the MongoDB container.
+# ---------------------------------------------------------
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -23,6 +33,7 @@ spec:
         app: mongo
     spec:
       volumes:
+        # Define a storage volume using the PVC created above
         - name: mongo-storage
           persistentVolumeClaim:
             claimName: mongo-pvc
@@ -31,10 +42,17 @@ spec:
           image: mongo:latest
           ports:
             - containerPort: 27017
+          # Mount the volume into the container's data directory.
+          # Everything written to /data/db is actually saved to the PVC.
           volumeMounts:
             - mountPath: "/data/db"
               name: mongo-storage
+
 ---
+# ---------------------------------------------------------
+# 3. DATABASE SERVICE
+# Exposes the database to other pods in the cluster.
+# ---------------------------------------------------------
 apiVersion: v1
 kind: Service
 metadata:
@@ -43,5 +61,5 @@ spec:
   selector:
     app: mongo
   ports:
-    - port: 27017
-      targetPort: 27017
+    - port: 27017      # The port other pods use to talk to this service
+      targetPort: 27017 # The port the container is listening on

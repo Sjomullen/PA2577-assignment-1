@@ -1,8 +1,14 @@
+# ---------------------------------------------------------
+# 1. INVENTORY DEPLOYMENT (Backend)
+# The internal service that handles business logic.
+# ---------------------------------------------------------
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: inventory-deployment
 spec:
+  # SCALABILITY PROOF:
+  # Running 2 replicas ensures horizontal scalability and high availability.
   replicas: 2
   selector:
     matchLabels:
@@ -14,14 +20,23 @@ spec:
     spec:
       containers:
         - name: inventory
-          # REPLACE WITH YOUR DOCKER HUB IMAGE/USERNAME
+          # Your Docker Hub image
           image: spikaer/inventory-service:latest
           ports:
             - containerPort: 5000
+          # ENVIRONMENT VARIABLES:
+          # Injects the connection string for the database.
+          # Uses the service name 'mongo' which K8s DNS resolves automatically.
           env:
             - name: MONGO_URI
               value: "mongodb://mongo:27017/"
+
 ---
+# ---------------------------------------------------------
+# 2. INVENTORY SERVICE (Internal)
+# This uses the default 'ClusterIP' type.
+# It is NOT accessible from the outside internet, only from other pods.
+# ---------------------------------------------------------
 apiVersion: v1
 kind: Service
 metadata:
