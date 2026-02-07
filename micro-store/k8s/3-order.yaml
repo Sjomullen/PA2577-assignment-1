@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order
+  template:
+    metadata:
+      labels:
+        app: order
+    spec:
+      containers:
+        - name: order
+          # REPLACE WITH YOUR DOCKER HUB IMAGE/USERNAME
+          image: spikaer/order-service:latest
+          ports:
+            - containerPort: 5001
+          env:
+            - name: INVENTORY_URL
+              value: "http://inventory-service:5000"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+spec:
+  type: LoadBalancer # Change to NodePort if using Minikube/local
+  selector:
+    app: order
+  ports:
+    - port: 80
+      targetPort: 5001
+      nodePort: 30001 # Optional: forces port 30001

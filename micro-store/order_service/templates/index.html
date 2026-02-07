@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Micro-Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { padding-top: 50px; background-color: #f8f9fa; }
+        .card { margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .stock-count { font-weight: bold; color: #198754; }
+        .out-of-stock { color: #dc3545; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="text-center mb-5">🛍️ The Micro-Store</h1>
+
+    <div class="row">
+        {% for product in products %}
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="card-title">{{ product.name }}</h3>
+                    <p class="text-muted">Product ID: {{ product.id }}</p>
+                    <hr>
+                    <h4>Stock:
+                        <span class="{% if product.quantity > 0 %}stock-count{% else %}out-of-stock{% endif %}">
+                                {{ product.quantity }}
+                            </span>
+                    </h4>
+                    <br>
+                    {% if product.quantity > 0 %}
+                    <a href="/buy/{{ product.id }}" class="btn btn-primary btn-lg">Buy Now</a>
+                    {% else %}
+                    <button class="btn btn-secondary btn-lg" disabled>Out of Stock</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="text-center mt-5">
+        <a href="/" class="btn btn-outline-dark">↻ Refresh Stock</a>
+    </div>
+</div>
+</body>
+</html>
